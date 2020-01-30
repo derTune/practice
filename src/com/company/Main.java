@@ -1,10 +1,17 @@
 package com.company;
 
-import java.util.Scanner;
-
 public class Main {
-
     public static void main(String[] args) {
-	Scanner sc = new Scanner(System.in);
+        DB database = new DB();
+        System.out.println(database.getTrainers());
+        System.out.println("Overall sum of salaries = " + database.getOverallSalary());
+        System.out.println(database.getSurnames());
+        System.out.println(database.getCountOfTrainers() + " trainers");
+        System.out.println(database.getGroups());
+        String c = "B";
+        System.out.println(database.getCities("Kyrgyzstan", c));
+        System.out.println(database.getCitiesPopulation(1) + " people");
+        System.out.println(database.getAverageMark(1));
+        System.out.println(database.getStudent(2));
     }
 }
