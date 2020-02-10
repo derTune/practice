@@ -2,12 +2,14 @@ package com.company;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class DB {
     private final static String url = "jdbc:postgresql://localhost:5432/";
     private final static String user = "postgres";
     private final static String password = "1234";
+
     public static Connection connect() {
         Connection conn = null;
         try {
@@ -23,9 +25,9 @@ public class DB {
         List<Trainer> trainers = new ArrayList<>();
         String SQL = "select concat(t.name, ' ' ,t.surname) as trainers, t.salary from trainers t";
         try (Connection conn = DB.connect();
-             Statement statement = conn.createStatement()){
-            try(ResultSet rs = statement.executeQuery(SQL)) {
-                while(rs.next()) {
+             Statement statement = conn.createStatement()) {
+            try (ResultSet rs = statement.executeQuery(SQL)) {
+                while (rs.next()) {
                     Trainer t = new Trainer();
                     t.setFullname(rs.getString("trainers"));
                     t.setSalary(rs.getInt("salary"));
@@ -41,15 +43,14 @@ public class DB {
     public int getOverallSalary() {
         int sum = 0;
         String SQL = "select SUM(salary) as Overall_Sum from trainers";
-        try(Connection conn = DB.connect();
-            Statement statement = conn.createStatement()) {
-            try(ResultSet rs = statement.executeQuery(SQL)) {
-                if(rs.next()) {
+        try (Connection conn = DB.connect();
+             Statement statement = conn.createStatement()) {
+            try (ResultSet rs = statement.executeQuery(SQL)) {
+                if (rs.next()) {
                     sum = rs.getInt("overall_sum");
                 }
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return sum;
@@ -58,19 +59,18 @@ public class DB {
     public List<String> getSurnames() {
         List<String> listOfSurnames = new ArrayList<>();
         String SQL = "select surname from trainers";
-        try(Connection conn = DB.connect();
-        Statement statement = conn.createStatement()) {
-            try(ResultSet rs = statement.executeQuery(SQL)) {
-                while(rs.next()) {
+        try (Connection conn = DB.connect();
+             Statement statement = conn.createStatement()) {
+            try (ResultSet rs = statement.executeQuery(SQL)) {
+                while (rs.next()) {
                     String surname = null;
-                    if(rs.getString("surname").length() > 3) {
+                    if (rs.getString("surname").length() > 3) {
                         surname = rs.getString("surname") + " МОЛОДЕЦ!";
                     }
                     listOfSurnames.add(surname);
                 }
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return listOfSurnames;
@@ -80,14 +80,13 @@ public class DB {
         int count = 0;
         String SQL = "select COUNT(*) from students";
         try (Connection conn = DB.connect();
-            Statement statement = conn.createStatement()) {
+             Statement statement = conn.createStatement()) {
             try (ResultSet rs = statement.executeQuery(SQL)) {
-                if(rs.next()) {
+                if (rs.next()) {
                     count = rs.getInt("count");
                 }
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return count;
@@ -97,7 +96,7 @@ public class DB {
         List<Group> listOfGroups = new ArrayList<>();
         String SQL = "select group_id, name from groups";
         try (Connection conn = DB.connect();
-            Statement statement = conn.createStatement()) {
+             Statement statement = conn.createStatement()) {
             try (ResultSet rs = statement.executeQuery(SQL)) {
                 while (rs.next()) {
                     Group g = new Group();
@@ -106,8 +105,7 @@ public class DB {
                     listOfGroups.add(g);
                 }
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return listOfGroups;
@@ -120,19 +118,18 @@ public class DB {
                 "where ct.name like ?";
         List<City> listOfCountries = new ArrayList<>();
         try (Connection conn = DB.connect();
-            PreparedStatement statement = conn.prepareStatement(SQL)) {
+             PreparedStatement statement = conn.prepareStatement(SQL)) {
             statement.setString(1, c);
             try (ResultSet rs = statement.executeQuery()) {
-                while(rs.next()) {
-                    if(rs.getString("country_name").equals(country)) {
+                while (rs.next()) {
+                    if (rs.getString("country_name").equals(country)) {
                         City ct = new City();
                         ct.setName(rs.getString("city_name"));
                         listOfCountries.add(ct);
                     }
                 }
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return listOfCountries;
@@ -143,15 +140,14 @@ public class DB {
         String SQL = "select SUM(population) as overall_population from cities\n" +
                 "where country_id = ?";
         try (Connection conn = DB.connect();
-            PreparedStatement statement = conn.prepareStatement(SQL)) {
+             PreparedStatement statement = conn.prepareStatement(SQL)) {
             statement.setInt(1, countryId);
             try (ResultSet rs = statement.executeQuery()) {
-                if(rs.next()) {
+                if (rs.next()) {
                     sum = rs.getInt("overall_population");
                 }
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return sum;
@@ -162,15 +158,14 @@ public class DB {
         String SQL = "select avg(mark) as average_mark from marks\n" +
                 "where marks.student_id = ?";
         try (Connection conn = DB.connect();
-            PreparedStatement statement = conn.prepareStatement(SQL)) {
+             PreparedStatement statement = conn.prepareStatement(SQL)) {
             statement.setInt(1, student_id);
             try (ResultSet rs = statement.executeQuery()) {
-                if(rs.next()) {
+                if (rs.next()) {
                     average = rs.getDouble("average_mark");
                 }
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return average;
@@ -184,19 +179,33 @@ public class DB {
                 "join faculties1 on groups1.faculty_id = faculties1.id \n" +
                 "join universities1 on faculties1.university_id = universities1.id ";
         try (Connection conn = DB.connect();
-            Statement statement = conn.createStatement()) {
+             Statement statement = conn.createStatement()) {
             try (ResultSet rs = statement.executeQuery(SQL)) {
-                if(rs.next()) {
+                if (rs.next()) {
                     s.setFullname(rs.getString("fullname"));
                     s.setFaculty(rs.getString("faculty"));
                     s.setGroup(rs.getString("group"));
                     s.setUniversity(rs.getString("university"));
                 }
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return s;
+    }
+
+    public boolean addCity(City city) {
+        String SQL = "insert into cities1(id, name) values(?, ?)";
+        try (Connection conn = DB.connect();
+             PreparedStatement statement = conn.prepareStatement(SQL)) {
+                     statement.setInt(1, city.getId());
+                     statement.setString(2, city.getName());
+                     System.out.println("Added one city");
+                     statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 }
