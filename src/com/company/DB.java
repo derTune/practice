@@ -1,9 +1,12 @@
 package com.company;
 
+import com.sun.jersey.server.impl.model.parameter.multivalued.MultivaluedParameterExtractor;
+import org.codehaus.jackson.map.util.ISO8601Utils;
+
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Date;
 
 public class DB {
     private final static String url = "jdbc:postgresql://localhost:5432/";
@@ -195,7 +198,7 @@ public class DB {
     }
 
     public boolean addCity(City city) {
-        String SQL = "insert into cities1(id, name) values(?, ?)";
+        String SQL = "insert into cities(id, name) values(?, ?)";
         try (Connection conn = DB.connect();
              PreparedStatement statement = conn.prepareStatement(SQL)) {
                      statement.setInt(1, city.getId());
@@ -207,5 +210,60 @@ public class DB {
             return false;
         }
         return true;
+    }
+
+    public boolean registerUser(User user) {
+        String SQL = "insert into user_table (username, password) values (?, ?)";
+        try (Connection conn = DB.connect();
+            PreparedStatement statement = conn.prepareStatement(SQL)) {
+            statement.setString(1, user.getUsername());
+            statement.setString(2, passwordHash(user.getPassword()));
+            statement.executeQuery();
+            System.out.println("Added user");
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public String passwordHash(String password) {
+        char[] pass = password.toCharArray();
+        char[] rev = new char[pass.length];
+        int j = pass.length;
+        for(int i = 0; i < rev.length; i++) {
+            rev[j - 1] = pass[i];
+            j = j - 1;
+        }
+        String pw = new String(rev);
+        return pw + rev[pass.length - 1];
+    }
+
+    public AuthorizedUser authorize(String username, String password) {
+        AuthorizedUser au = null;
+        String SQL = "select * from user_table where username = ?";
+        try (Connection conn = DB.connect();
+            PreparedStatement statement = conn.prepareStatement(SQL)) {
+            statement.setString(1, username);
+            try (ResultSet rs = statement.executeQuery()) {
+                if(rs.next()) {
+                    if(passwordHash(password).equals(rs.getString("password"))) {
+                        au = new AuthorizedUser();
+                        au.setId(rs.getInt("id"));
+                        au.setUsername(rs.getString("username"));
+                        au.setLogin_time(new Date());
+                        System.out.println("Welcome, " + au.getUsername());
+                        return au;
+                    }
+                } else {
+                    new LoginException("Wrong login or password!");
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return au;
     }
 }
