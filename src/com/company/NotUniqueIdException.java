@@ -1,7 +1,7 @@
 package com.company;
 
 public class NotUniqueIdException extends Exception {
-    public void printDescription() {
-        String message = "";
+    public NotUniqueIdException(String msg) {
+        System.out.println(msg);
     }
 }
